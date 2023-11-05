@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.IO;
 
 public class MainManager : MonoBehaviour
 {
@@ -11,14 +12,27 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text Scorefinal;
     public GameObject GameOverText;
     
     private bool m_Started = false;
-    private int m_Points;
-    
-    private bool m_GameOver = false;
+    public int m_Points;
+    public int decididor;
 
+    private bool m_GameOver = false;
     
+    
+   
+        private void Awake()
+        {
+        
+
+
+        Loadpuntaje(); 
+        finalscore();
+    }
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -67,10 +81,55 @@ public class MainManager : MonoBehaviour
         m_Points += point;
         ScoreText.text = $"Score : {m_Points}";
     }
+    void finalscore() { Scorefinal.text = $" {MoinManager.Instance.nombreparaenviar} tu mejor score es de: {decididor}"; }
+    void fsavescore()
+    {
+        if (m_Points > decididor)
+        {
+            decididor = m_Points;
+        }
+       
+            
+      
+        Savepuntaje();
+
+    }
 
     public void GameOver()
     {
+        fsavescore();
         m_GameOver = true;
         GameOverText.SetActive(true);
+
+    }
+    [System.Serializable]
+    class SaveData
+    {
+        
+        public int decididor;
+    }
+
+    public void Savepuntaje()
+    {
+        SaveData data = new SaveData();
+
+        data.decididor = decididor;
+
+        string json = JsonUtility.ToJson(data);
+
+        File.WriteAllText(Application.persistentDataPath + "/savefile.json", json);
+    }
+
+    public void Loadpuntaje()
+    {
+        string path = Application.persistentDataPath + "/savefile.json";
+        if (File.Exists(path))
+        {
+            string json = File.ReadAllText(path);
+            SaveData data = JsonUtility.FromJson<SaveData>(json);
+
+            
+            decididor = data.decididor;
+        }
     }
 }
